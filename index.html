@@ -1,0 +1,674 @@
+<!doctype html>
+<html lang="en" class="no-js">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Evan M. Platten — RNA Biology · Data Science · Spatial Omics</title>
+<meta name="description" content="Evan M. Platten — Research Specialist at the University of Rochester School of Medicine & Dentistry, working at the intersection of RNA biology, machine learning, and spatial omics.">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,500&family=Hanken+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<script>document.documentElement.classList.remove('no-js');document.documentElement.classList.add('js');</script>
+
+<style>
+  /* ============================== TOKENS ============================== */
+  :root{
+    --paper:#f4f0e7;
+    --paper-2:#ece7da;
+    --paper-3:#e4dece;
+    --ink:#16140f;
+    --ink-soft:#433d30;
+    --ink-faint:#8a8472;
+    --line:rgba(22,20,15,0.14);
+    --line-strong:rgba(22,20,15,0.26);
+    --accent:#1a6f59;          /* deep emerald — a nod to GFP / living signal */
+    --accent-deep:#125342;
+    --accent-soft:rgba(26,111,89,0.10);
+    --coral:#c2553a;           /* warm signal — used very sparingly */
+    --coral-soft:rgba(194,85,58,0.12);
+
+    --maxw:1140px;
+    --gutter:clamp(1.25rem,5vw,4rem);
+
+    --f-display:"Fraunces",Georgia,"Times New Roman",serif;
+    --f-body:"Hanken Grotesk","Helvetica Neue",Arial,sans-serif;
+    --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+
+    --ease:cubic-bezier(.22,.61,.36,1);
+  }
+
+  /* ============================== RESET ============================== */
+  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+  body{
+    font-family:var(--f-body);
+    background:var(--paper);
+    color:var(--ink);
+    line-height:1.6;
+    font-size:clamp(1rem,0.96rem + 0.2vw,1.0625rem);
+    font-weight:400;
+    -webkit-font-smoothing:antialiased;
+    text-rendering:optimizeLegibility;
+    overflow-x:hidden;
+  }
+  a{color:inherit;text-decoration:none}
+  img{max-width:100%;display:block}
+  ::selection{background:var(--accent);color:var(--paper)}
+
+  /* grain / atmosphere */
+  .grain{
+    position:fixed;inset:0;z-index:1;pointer-events:none;opacity:.05;
+    mix-blend-mode:multiply;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  .wrap{max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gutter)}
+
+  /* ============================== NAV ============================== */
+  header.nav{
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:saturate(1.2) blur(8px);
+    -webkit-backdrop-filter:saturate(1.2) blur(8px);
+    background:rgba(244,240,231,0.72);
+    border-bottom:1px solid transparent;
+    transition:border-color .4s var(--ease),background .4s var(--ease);
+  }
+  header.nav.scrolled{border-bottom-color:var(--line);background:rgba(244,240,231,0.9)}
+  .nav-inner{
+    max-width:var(--maxw);margin-inline:auto;padding:1.05rem var(--gutter);
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;
+  }
+  .brand{
+    font-family:var(--f-display);font-weight:600;font-size:1.18rem;letter-spacing:-.01em;
+    display:inline-flex;align-items:center;gap:.55rem;white-space:nowrap;
+  }
+  .brand .dot{width:.5rem;height:.5rem;border-radius:50%;background:var(--accent);flex:none;
+    box-shadow:0 0 0 3px var(--accent-soft)}
+  .nav-links{display:flex;align-items:center;gap:.25rem}
+  .nav-links a{
+    font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--ink-soft);padding:.5rem .7rem;border-radius:7px;
+    transition:color .25s var(--ease),background .25s var(--ease);
+  }
+  .nav-links a:hover{color:var(--ink);background:var(--accent-soft)}
+  .nav-cta{
+    font-family:var(--f-mono);font-size:.74rem;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--paper);background:var(--ink);padding:.55rem .95rem;border-radius:999px;
+    transition:background .25s var(--ease),transform .25s var(--ease);
+  }
+  .nav-cta:hover{background:var(--accent-deep);transform:translateY(-1px)}
+
+  /* ============================== HERO ============================== */
+  .hero{position:relative;overflow:hidden;border-bottom:1px solid var(--line)}
+  #field{position:absolute;inset:0;width:100%;height:100%;z-index:0;opacity:.62;pointer-events:none}
+  .hero::after{ /* fade the field out toward the bottom for a clean section seam */
+    content:"";position:absolute;left:0;right:0;bottom:0;height:42%;z-index:0;pointer-events:none;
+    background:linear-gradient(to bottom,rgba(244,240,231,0) 0%,var(--paper) 88%);
+  }
+  .hero-inner{position:relative;z-index:2;max-width:var(--maxw);margin-inline:auto;
+    padding:clamp(3.5rem,9vw,7rem) var(--gutter) clamp(3.5rem,8vw,6rem)}
+
+  .status{
+    display:inline-flex;align-items:center;gap:.55rem;
+    font-family:var(--f-mono);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;
+    color:var(--accent-deep);background:var(--accent-soft);
+    border:1px solid rgba(26,111,89,.22);
+    padding:.4rem .8rem;border-radius:999px;margin-bottom:1.8rem;
+  }
+  .status .pulse{position:relative;width:.5rem;height:.5rem;border-radius:50%;background:var(--accent)}
+  .status .pulse::after{content:"";position:absolute;inset:0;border-radius:50%;background:var(--accent);
+    animation:ping 2.4s var(--ease) infinite}
+  @keyframes ping{0%{transform:scale(1);opacity:.7}70%,100%{transform:scale(3.2);opacity:0}}
+
+  .kicker{
+    font-family:var(--f-mono);font-size:.78rem;letter-spacing:.16em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:1.1rem;
+  }
+  h1.name{
+    font-family:var(--f-display);font-weight:600;
+    font-size:clamp(2.9rem,7.2vw,6rem);line-height:.98;letter-spacing:-.022em;
+    margin-bottom:1.25rem;
+    font-optical-sizing:auto;
+  }
+  .role{
+    font-family:var(--f-body);font-weight:500;
+    font-size:clamp(1.02rem,1.4vw,1.18rem);color:var(--ink-soft);
+    margin-bottom:1.9rem;max-width:42ch;
+  }
+  .lead{
+    font-size:clamp(1.16rem,1.05rem + .7vw,1.5rem);
+    line-height:1.5;max-width:34ch;color:var(--ink);margin-bottom:1.5rem;
+    font-weight:400;
+  }
+  .lead em{font-family:var(--f-display);font-style:italic;font-weight:500;color:var(--accent-deep)}
+  .sub{max-width:56ch;color:var(--ink-soft);font-size:1.02rem;margin-bottom:2.4rem}
+  .sub a{color:var(--accent-deep);text-decoration:underline;text-decoration-color:rgba(26,111,89,.35);
+    text-underline-offset:3px;transition:text-decoration-color .25s var(--ease)}
+  .sub a:hover{text-decoration-color:var(--accent-deep)}
+
+  .hero-meta{display:flex;flex-wrap:wrap;align-items:center;gap:1.4rem 1.8rem}
+  .hero-meta a, .hero-meta span{
+    font-family:var(--f-mono);font-size:.8rem;letter-spacing:.03em;color:var(--ink-soft);
+    display:inline-flex;align-items:center;gap:.5rem;
+  }
+  .hero-meta a{transition:color .25s var(--ease)}
+  .hero-meta a:hover{color:var(--accent-deep)}
+  .hero-meta a svg{width:15px;height:15px;flex:none}
+  .hero-meta .loc{color:var(--ink-faint)}
+
+  /* ============================== SECTIONS ============================== */
+  section{padding-block:clamp(3.5rem,7vw,6.5rem)}
+  section + section{border-top:1px solid var(--line)}
+  .sec-head{margin-bottom:clamp(2rem,4vw,3.25rem);max-width:62ch}
+  .sec-kicker{
+    font-family:var(--f-mono);font-size:.76rem;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--accent-deep);display:flex;align-items:center;gap:.85rem;margin-bottom:1rem;
+  }
+  .sec-kicker::after{content:"";flex:none;width:clamp(34px,8vw,72px);height:1px;background:var(--line-strong)}
+  h2.sec-title{
+    font-family:var(--f-display);font-weight:500;letter-spacing:-.015em;
+    font-size:clamp(1.9rem,4.5vw,3rem);line-height:1.04;
+  }
+  .sec-intro{margin-top:1.1rem;color:var(--ink-soft);font-size:1.06rem;max-width:54ch}
+
+  /* ============================== FOCUS / SKILLS ============================== */
+  .skill-groups{display:grid;gap:clamp(1.6rem,3vw,2.5rem)}
+  .skill-group{
+    display:grid;grid-template-columns:minmax(0,210px) 1fr;gap:1rem 2.5rem;align-items:start;
+    padding-block:1.6rem;border-top:1px solid var(--line);
+  }
+  .skill-group:first-child{border-top:none;padding-top:0}
+  .skill-group .label{
+    font-family:var(--f-mono);font-size:.78rem;letter-spacing:.08em;text-transform:uppercase;
+    color:var(--ink);padding-top:.35rem;
+  }
+  .tags{display:flex;flex-wrap:wrap;gap:.55rem}
+  .tag{
+    font-size:.92rem;color:var(--ink-soft);background:var(--paper-2);
+    border:1px solid var(--line);border-radius:999px;padding:.4rem .85rem;
+    transition:transform .2s var(--ease),border-color .2s var(--ease),color .2s var(--ease),background .2s var(--ease);
+  }
+  .tag:hover{transform:translateY(-2px);border-color:var(--accent);color:var(--accent-deep);background:var(--accent-soft)}
+
+  /* ============================== EXPERIENCE ============================== */
+  .entry{
+    display:grid;grid-template-columns:minmax(0,300px) 1fr;gap:1rem 3rem;
+    padding-block:clamp(1.8rem,3vw,2.6rem);border-top:1px solid var(--line);
+  }
+  .entry:first-of-type{border-top:none;padding-top:0}
+  .entry-side .org{font-family:var(--f-display);font-weight:600;font-size:1.28rem;letter-spacing:-.01em;line-height:1.15}
+  .entry-side .place{font-family:var(--f-mono);font-size:.76rem;color:var(--ink-faint);letter-spacing:.04em;margin-top:.45rem}
+  .entry-side .when{font-family:var(--f-mono);font-size:.76rem;color:var(--accent-deep);letter-spacing:.04em;margin-top:.55rem}
+  .entry-role{font-weight:600;font-size:1.05rem;margin-bottom:.9rem;color:var(--ink)}
+  .entry ul{list-style:none;display:grid;gap:.8rem}
+  .entry li{position:relative;padding-left:1.4rem;color:var(--ink-soft);max-width:64ch}
+  .entry li::before{content:"";position:absolute;left:0;top:.62em;width:.42rem;height:.42rem;border-radius:50%;
+    background:var(--accent);opacity:.85}
+  .entry li b{color:var(--ink);font-weight:600}
+  .sci{font-style:italic}
+
+  /* ============================== PROJECTS ============================== */
+  .proj-feature{
+    background:var(--paper-2);border:1px solid var(--line);border-radius:18px;
+    padding:clamp(1.6rem,3.5vw,2.8rem);position:relative;overflow:hidden;
+    transition:border-color .3s var(--ease),transform .3s var(--ease);
+  }
+  .proj-feature::before{ /* faint corner field */
+    content:"";position:absolute;right:-60px;top:-60px;width:240px;height:240px;border-radius:50%;
+    background:radial-gradient(circle,var(--accent-soft),transparent 70%);pointer-events:none;
+  }
+  .proj-feature:hover{border-color:var(--accent);transform:translateY(-3px)}
+  .proj-tagrow{display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:1.2rem}
+  .pill{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.04em;color:var(--accent-deep);
+    background:var(--paper);border:1px solid rgba(26,111,89,.25);border-radius:6px;padding:.3rem .6rem}
+  .proj-title{font-family:var(--f-display);font-weight:600;font-size:clamp(1.5rem,3vw,2.1rem);
+    letter-spacing:-.015em;line-height:1.08;margin-bottom:.9rem}
+  .proj-title .star{color:var(--coral)}
+  .proj-feature p{color:var(--ink-soft);max-width:68ch;margin-bottom:.85rem}
+  .proj-feature p:last-child{margin-bottom:0}
+  .proj-feature p b{color:var(--ink);font-weight:600}
+
+  .proj-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1.25rem}
+  .proj-card{
+    background:var(--paper);border:1px solid var(--line);border-radius:14px;padding:1.5rem 1.6rem;
+    transition:border-color .3s var(--ease),transform .3s var(--ease);
+  }
+  .proj-card:hover{border-color:var(--accent);transform:translateY(-3px)}
+  .proj-card h3{font-family:var(--f-display);font-weight:600;font-size:1.22rem;letter-spacing:-.01em;margin-bottom:.7rem}
+  .proj-card p{color:var(--ink-soft);font-size:.96rem;margin-bottom:1rem}
+  .proj-card .pill{font-size:.68rem}
+
+  /* ============================== PUBLICATIONS ============================== */
+  .pub{
+    display:grid;grid-template-columns:minmax(0,86px) 1fr;gap:1rem 2rem;
+    padding-block:clamp(1.5rem,3vw,2.1rem);border-top:1px solid var(--line);align-items:start;
+  }
+  .pub:first-of-type{border-top:none;padding-top:0}
+  .pub .year{font-family:var(--f-display);font-weight:600;font-size:1.5rem;color:var(--accent-deep);line-height:1}
+  .pub .venue{font-family:var(--f-mono);font-size:.72rem;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--ink-faint);margin-bottom:.6rem}
+  .pub .ptitle{font-family:var(--f-display);font-weight:500;font-size:1.22rem;line-height:1.28;
+    letter-spacing:-.01em;margin-bottom:.7rem;color:var(--ink)}
+  .pub .authors{color:var(--ink-soft);font-size:.98rem;margin-bottom:.7rem}
+  .pub .authors b{color:var(--ink);font-weight:700}
+  .pub .authors .sci{font-style:italic}
+  .pub a.link{
+    font-family:var(--f-mono);font-size:.76rem;letter-spacing:.04em;color:var(--accent-deep);
+    display:inline-flex;align-items:center;gap:.45rem;
+    border-bottom:1px solid rgba(26,111,89,.3);padding-bottom:1px;transition:border-color .25s var(--ease)}
+  .pub a.link:hover{border-color:var(--accent-deep)}
+  .pub a.link svg{width:13px;height:13px}
+
+  /* ============================== EDUCATION ============================== */
+  .edu{display:grid;gap:0}
+  .edu-row{
+    display:grid;grid-template-columns:1fr auto;gap:.5rem 2rem;align-items:baseline;
+    padding-block:1.4rem;border-top:1px solid var(--line);
+  }
+  .edu-row:first-child{border-top:none;padding-top:0}
+  .edu-deg{font-family:var(--f-display);font-weight:600;font-size:1.2rem;letter-spacing:-.01em}
+  .edu-school{color:var(--ink-soft);font-size:.98rem;margin-top:.25rem}
+  .edu-meta{font-family:var(--f-mono);font-size:.78rem;color:var(--accent-deep);letter-spacing:.04em;text-align:right;white-space:nowrap}
+
+  /* ============================== FOOTER ============================== */
+  footer{background:var(--ink);color:var(--paper);padding-block:clamp(3.5rem,7vw,6rem)}
+  footer .wrap{display:grid;gap:2.5rem}
+  .foot-cta{font-family:var(--f-display);font-weight:500;letter-spacing:-.02em;
+    font-size:clamp(2.4rem,6vw,4.5rem);line-height:1}
+  .foot-cta a{color:var(--paper);position:relative;transition:color .3s var(--ease)}
+  .foot-cta a:hover{color:#fff}
+  .foot-cta a .u{display:block;height:2px;background:var(--accent);margin-top:.3rem;
+    transform:scaleX(.18);transform-origin:left;transition:transform .4s var(--ease)}
+  .foot-cta a:hover .u{transform:scaleX(1)}
+  .foot-grid{display:flex;flex-wrap:wrap;justify-content:space-between;gap:2rem;
+    border-top:1px solid rgba(244,240,231,.16);padding-top:2rem}
+  .foot-links{display:flex;flex-wrap:wrap;gap:1.4rem}
+  .foot-links a{font-family:var(--f-mono);font-size:.82rem;letter-spacing:.04em;color:rgba(244,240,231,.78);
+    display:inline-flex;align-items:center;gap:.5rem;transition:color .25s var(--ease)}
+  .foot-links a:hover{color:#fff}
+  .foot-links a svg{width:15px;height:15px}
+  .foot-note{font-family:var(--f-mono);font-size:.74rem;color:rgba(244,240,231,.5);letter-spacing:.04em}
+
+  /* ============================== REVEAL ANIMATION ============================== */
+  .js .reveal{opacity:0;transform:translateY(22px);transition:opacity .8s var(--ease),transform .8s var(--ease)}
+  .js .reveal.in{opacity:1;transform:none}
+  .js .hero-inner > *{opacity:0;transform:translateY(18px);animation:rise .9s var(--ease) forwards}
+  .js .hero-inner > *:nth-child(1){animation-delay:.05s}
+  .js .hero-inner > *:nth-child(2){animation-delay:.13s}
+  .js .hero-inner > *:nth-child(3){animation-delay:.21s}
+  .js .hero-inner > *:nth-child(4){animation-delay:.29s}
+  .js .hero-inner > *:nth-child(5){animation-delay:.37s}
+  .js .hero-inner > *:nth-child(6){animation-delay:.45s}
+  @keyframes rise{to{opacity:1;transform:none}}
+
+  /* focus visibility */
+  a:focus-visible,.nav-cta:focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:4px}
+
+  /* ============================== RESPONSIVE ============================== */
+  @media (max-width:860px){
+    .nav-links{display:none}
+    .skill-group{grid-template-columns:1fr;gap:.85rem}
+    .skill-group .label{padding-top:0}
+    .entry{grid-template-columns:1fr;gap:1rem}
+    .proj-grid{grid-template-columns:1fr}
+    .pub{grid-template-columns:1fr;gap:.4rem}
+    .pub .year{font-size:1.15rem}
+    .edu-row{grid-template-columns:1fr;gap:.35rem}
+    .edu-meta{text-align:left}
+  }
+  @media (prefers-reduced-motion:reduce){
+    html{scroll-behavior:auto}
+    *{animation:none!important;transition:none!important}
+    .js .reveal{opacity:1;transform:none}
+    .js .hero-inner > *{opacity:1;transform:none}
+  }
+</style>
+</head>
+<body>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- ============================== NAV ============================== -->
+<header class="nav" id="nav">
+  <div class="nav-inner">
+    <a href="#top" class="brand"><span class="dot" aria-hidden="true"></span>Evan&nbsp;Platten</a>
+    <nav class="nav-links" aria-label="Primary">
+      <a href="#focus">Focus</a>
+      <a href="#work">Work</a>
+      <a href="#projects">Projects</a>
+      <a href="#publications">Publications</a>
+    </nav>
+    <a class="nav-cta" href="Platen_Evan_CV2.pdf">CV</a>
+  </div>
+</header>
+
+<!-- ============================== HERO ============================== -->
+<section class="hero" id="top">
+  <canvas id="field" aria-hidden="true"></canvas>
+  <div class="hero-inner">
+    <span class="status"><span class="pulse" aria-hidden="true"></span>Open to new roles — 2026</span>
+    <p class="kicker">RNA Biology · Machine Learning · Spatial Omics</p>
+    <h1 class="name">Evan M. Platten</h1>
+    <p class="role">Research Specialist · University of Rochester School of Medicine &amp; Dentistry</p>
+    <p class="lead">I work at the seam between the bench and the algorithm — building the tools that turn large, messy biological data into something you can actually&nbsp;<em>see</em>.</p>
+    <p class="sub">Six years of RNA biology and a new M.S. in Data Science from the <a href="https://www.sas.rochester.edu/dsc/" target="_blank" rel="noopener">Goergen Institute for Data Science</a>. Currently studying tRNA biology in the Phizicky Lab, building <a href="#projects">CellscapeXR</a> — an interactive 3D viewer for spatial transcriptomics — and co-author on two publications on the Integrated Stress Response, a pathway implicated in neurodegeneration.</p>
+    <div class="hero-meta">
+      <a href="mailto:evan_platten@urmc.rochester.edu">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        evan_platten@urmc.rochester.edu
+      </a>
+      <a href="https://www.linkedin.com/in/evan-platten-1691613b8" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.51 2.5 2.5 0 0 1 4.98 3.5zM.2 8.4h4.5V24H.2zM8.5 8.4h4.3v2.1h.06c.6-1.1 2.06-2.26 4.24-2.26 4.54 0 5.38 2.98 5.38 6.86V24h-4.5v-6.94c0-1.66-.03-3.8-2.32-3.8-2.32 0-2.68 1.8-2.68 3.68V24H8.5z"/></svg>
+        LinkedIn
+      </a>
+      <a href="https://github.com/eplatten" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.36-3.88-1.36-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.42.36.8 1.08.8 2.18v3.24c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>
+        GitHub
+      </a>
+      <span class="loc">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" style="width:15px;height:15px"><path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+        Rochester, NY | Boston, MA
+      </span>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== FOCUS ============================== -->
+<section id="focus" class="wrap">
+  <div class="sec-head reveal">
+    <div class="sec-kicker">01 — Focus</div>
+    <h2 class="sec-title">What I work with</h2>
+    <p class="sec-intro">A toolkit spanning the full arc of a biological question — from the bench, through the pipeline, to the figure.</p>
+  </div>
+
+  <div class="skill-groups reveal">
+    <div class="skill-group">
+      <div class="label">Languages &amp; Tools</div>
+      <div class="tags">
+        <span class="tag">Python</span><span class="tag">R</span><span class="tag">SQL</span>
+        <span class="tag">C# / Unity</span><span class="tag">Bash / Linux</span>
+        <span class="tag">Git</span><span class="tag">PHP / HTML</span><span class="tag">Advanced Excel</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="label">Machine Learning &amp; Statistics</div>
+      <div class="tags">
+        <span class="tag">Supervised &amp; Unsupervised Learning</span><span class="tag">PCA &amp; t-SNE</span>
+        <span class="tag">SVMs</span><span class="tag">Decision Trees &amp; Ensembles</span><span class="tag">Neural Networks</span>
+        <span class="tag">Hypothesis Testing</span><span class="tag">Regression</span><span class="tag">ANOVA</span>
+        <span class="tag">Hidden Markov Models</span><span class="tag">Dynamic Programming</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="label">Bioinformatics &amp; Spatial Omics</div>
+      <div class="tags">
+        <span class="tag">Visium HD</span><span class="tag">Scanpy/Squidpy</span><span class="tag">Whole-Genome Sequencing</span>
+        <span class="tag">IGV</span><span class="tag">BLAST</span><span class="tag">Zarr to H5AD</span><span class="tag">QC/Normalization/Filtering</span>
+        <span class="tag">BioPython</span><span class="tag">GATK</span>
+      </div>
+    </div>
+    <div class="skill-group">
+      <div class="label">Wet Lab</div>
+      <div class="tags">
+        <span class="tag"><i>S. cerevisiae</i> Genetics</span><span class="tag">Strain Construction</span>
+        <span class="tag">Recombinant DNA</span><span class="tag">Gibson Assembly</span>
+        <span class="tag">PCR &amp; RT-qPCR</span><span class="tag">Northern Blot</span>
+        <span class="tag">Mass Spectrometry</span><span class="tag">Flow Cytometry (LSRII)</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== WORK ============================== -->
+<section id="work" class="wrap">
+  <div class="sec-head reveal">
+    <div class="sec-kicker">02 — Experience</div>
+    <h2 class="sec-title">Where I've worked</h2>
+  </div>
+
+  <div class="entry reveal">
+    <div class="entry-side">
+      <div class="org">Phizicky Laboratory</div>
+      <div class="place">University of Rochester · Biochemistry &amp; Biophysics</div>
+      <div class="when">Mar 2025 — Present</div>
+    </div>
+    <div class="entry-main">
+      <div class="entry-role">Research Specialist I</div>
+      <ul>
+        <li>Conduct RNA biology research with a focus on <b>tRNA biology</b>, applying established bioinformatics, Python/R, and data-analysis skills to ongoing projects.</li>
+        <li>Extended my technical repertoire to <b>Northern blot analysis</b> for transcript-level detection and quantification, and <b>mass spectrometry</b> for biomolecular characterization.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="entry reveal">
+    <div class="entry-side">
+      <div class="org">Grayhack Laboratory</div>
+      <div class="place">University of Rochester · Biochemistry &amp; Biophysics</div>
+      <div class="when">Jul 2019 — Mar 2025</div>
+    </div>
+    <div class="entry-main">
+      <div class="entry-role">Research Specialist I <span style="color:var(--ink-faint);font-weight:400"></span></div>
+      <ul>
+        <li>Co-authored two publications on the <b>Integrated Stress Response</b> — a pathway implicated in cognitive disorders and neurodegeneration — uncovering synergistic interactions between the factor Gcn1 and translational quality-control components.</li>
+        <li>Built <b>Python pipelines</b> to analyze whole-genome sequencing data across 32 yeast mutants, querying the UCSC Genome Browser API for gene identification and comparing related-species genomes to assess sequence conservation.</li>
+        <li>Designed <b>GFP/RFP fluorescent-reporter assays</b> on the LSRII flow cytometer (URMC Flow Core certified) to quantify the effects of genetic perturbations on translation in <span class="sci">S. cerevisiae</span>.</li>
+        <li>Designed and constructed yeast strains and recombinant DNA (plasmids, deletions, point mutations); performed Gibson assembly, cloning, PCR, RNA isolation, and RT-qPCR.</li>
+        <li>Trained and supervised undergraduate researchers and incoming technicians; managed lab IT, supplies, invoicing, and equipment maintenance.</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== PROJECTS ============================== -->
+<section id="projects" class="wrap">
+  <div class="sec-head reveal">
+    <div class="sec-kicker">03 — Projects</div>
+    <h2 class="sec-title">Selected work</h2>
+  </div>
+
+  <div class="proj-feature reveal">
+    <div class="proj-tagrow">
+      <span class="pill">Unity 3D</span><span class="pill">C#</span>
+      <span class="pill">Python</span><span class="pill">Visium HD</span><span class="pill">AnnData</span>
+    </div>
+    <h3 class="proj-title">CellscapeXR <span class="star">—</span> Interactive 3D Spatial Transcriptomics Viewer</h3>
+    <p>My Master's research at the Goergen Institute: a <b>fully interactive 3D environment</b> for exploring and teaching spatial transcriptomics. Researchers navigate, query, and inspect Visium HD datasets in real time, with expression data.</p>
+    <p>Built around a <b>cross-scene event system</b> enabling dataset hot-swapping, modular UI, and a state-driven guided tutorial. It contains point-cloud rendering at scale, and I resolved cross-platform build issues for both WebGL and standalone targets.</p>
+    <p>Supporting the application is a <b>Python / AnnData export pipeline</b> with resolution-preserving data-reduction strategies for 8&nbsp;µm Visium HD bins and bin2cell Cell Level data — keeping rendering tractable without sacrificing spatial detail.</p>
+  </div>
+</section>
+
+<!-- ============================== PUBLICATIONS ============================== -->
+<section id="publications" class="wrap">
+  <div class="sec-head reveal">
+    <div class="sec-kicker">04 — Publications</div>
+    <h2 class="sec-title">Published work</h2>
+  </div>
+
+  <div class="pub reveal">
+    <div class="year">2026</div>
+    <div>
+      <div class="venue">bioRxiv · Preprint</div>
+      <div class="ptitle">The Tor pathway, ribosome concentration, and wobble decoding mediate inhibitory effects of the Leu–Pro CUC–CCG codon pair in <span class="sci">Saccharomyces cerevisiae</span></div>
+      <div class="authors">Bruno, B.S., <b>Platten, E.M.</b>, Houston, L., Brule, C.E., Grayhack, E.J.</div>
+      <a class="link" href="https://doi.org/10.64898/2026.02.20.707122" target="_blank" rel="noopener">
+        View preprint
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="pub reveal">
+    <div class="year">2022</div>
+    <div>
+      <div class="venue">RNA · 28(3): 320–339 · Peer-reviewed</div>
+      <div class="ptitle">Frameshifting at collided ribosomes is modulated by elongation factor eEF3 and by Integrated Stress Response regulators Gcn1 and Gcn20</div>
+      <div class="authors">Houston, L., <b>Platten, E.M.</b>, Connelly, S.M., Wang, J., Grayhack, E.J.</div>
+      <a class="link" href="https://www.ncbi.nlm.nih.gov/pmc/articles/PMC8848926/" target="_blank" rel="noopener">
+        Read on PubMed Central
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M7 17 17 7M9 7h8v8"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== EDUCATION ============================== -->
+<section id="education" class="wrap">
+  <div class="sec-head reveal">
+    <div class="sec-kicker">05 — Education</div>
+    <h2 class="sec-title">Education</h2>
+  </div>
+  <div class="edu reveal">
+    <div class="edu-row">
+      <div>
+        <div class="edu-deg">M.S., Data Science</div>
+        <div class="edu-school">University of Rochester · Goergen Institute for Data Science</div>
+      </div>
+      <div class="edu-meta">2026</div>
+    </div>
+    <div class="edu-row">
+      <div>
+        <div class="edu-deg">B.S., Biochemistry <span style="color:var(--accent-deep);font-style:italic;font-family:var(--f-display);font-weight:500">— Magna Cum Laude</span></div>
+        <div class="edu-school">Stony Brook University · Dean's List, every full-time semester</div>
+      </div>
+      <div class="edu-meta">2019</div>
+    </div>
+    <div class="edu-row">
+      <div>
+        <div class="edu-deg">A.S., Liberal Arts &amp; Sciences</div>
+        <div class="edu-school">Monroe Community College (SUNY)</div>
+      </div>
+      <div class="edu-meta">2017</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================== FOOTER ============================== -->
+<footer id="contact">
+  <div class="wrap">
+    <div class="foot-cta reveal">
+      <a href="mailto:evan_platten@urmc.rochester.edu">Let's talk.<span class="u" aria-hidden="true"></span></a>
+    </div>
+    <div class="foot-grid">
+      <div class="foot-links">
+        <a href="mailto:evan_platten@urmc.rochester.edu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>Email
+        </a>
+        <a href="https://www.linkedin.com/in/evan-platten-1691613b8" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M4.98 3.5A2.5 2.5 0 1 1 0 3.51 2.5 2.5 0 0 1 4.98 3.5zM.2 8.4h4.5V24H.2zM8.5 8.4h4.3v2.1h.06c.6-1.1 2.06-2.26 4.24-2.26 4.54 0 5.38 2.98 5.38 6.86V24h-4.5v-6.94c0-1.66-.03-3.8-2.32-3.8-2.32 0-2.68 1.8-2.68 3.68V24H8.5z"/></svg>LinkedIn
+        </a>
+        <a href="https://github.com/eplatten" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 .5A11.5 11.5 0 0 0 .5 12a11.5 11.5 0 0 0 7.86 10.92c.58.1.79-.25.79-.56v-2c-3.2.7-3.88-1.36-3.88-1.36-.53-1.34-1.3-1.7-1.3-1.7-1.06-.72.08-.71.08-.71 1.17.08 1.79 1.2 1.79 1.2 1.04 1.79 2.73 1.27 3.4.97.1-.76.41-1.27.74-1.56-2.55-.29-5.24-1.28-5.24-5.7 0-1.26.45-2.29 1.19-3.1-.12-.29-.52-1.46.11-3.05 0 0 .97-.31 3.18 1.18a11 11 0 0 1 5.8 0c2.2-1.49 3.17-1.18 3.17-1.18.63 1.59.23 2.76.11 3.05.74.81 1.19 1.84 1.19 3.1 0 4.43-2.69 5.41-5.25 5.69.42.36.8 1.08.8 2.18v3.24c0 .31.21.67.8.56A11.5 11.5 0 0 0 23.5 12 11.5 11.5 0 0 0 12 .5z"/></svg>GitHub
+        </a>
+        <a href="Platten_Evan_CV2.pdf">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/></svg>CV
+        </a>
+      </div>
+      <div class="foot-note">Rochester, NY | Boston, MA · © 2026 Evan M. Platten</div>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  /* nav border on scroll */
+  var nav = document.getElementById('nav');
+  var onScroll = function(){ nav.classList.toggle('scrolled', window.scrollY > 12); };
+  onScroll(); window.addEventListener('scroll', onScroll, {passive:true});
+
+  /* scroll reveal */
+  var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var reveals = document.querySelectorAll('.reveal');
+  if(!reduce && 'IntersectionObserver' in window){
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(e){ if(e.isIntersecting){ e.target.classList.add('in'); io.unobserve(e.target); } });
+    }, {threshold:0.12, rootMargin:'0px 0px -8% 0px'});
+    reveals.forEach(function(el){ io.observe(el); });
+  } else {
+    reveals.forEach(function(el){ el.classList.add('in'); });
+  }
+
+  /* ---- hero point-cloud: a quiet nod to spatial transcriptomics ---- */
+  var canvas = document.getElementById('field');
+  if(!canvas) return;
+  var ctx = canvas.getContext('2d');
+  var hero = canvas.parentElement;
+  var w, h, dpr, pts = [], raf = null;
+
+  var INK = [138,132,114];     // faint ink
+  var GREEN = [26,111,89];     // accent
+  var CORAL = [194,85,58];     // sparing signal
+
+  function color(){
+    var r = Math.random();
+    if(r < 0.16) return GREEN;
+    if(r < 0.22) return CORAL;
+    return INK;
+  }
+  function build(){
+    var area = w * h;
+    var count = Math.max(28, Math.min(150, Math.round(area / 9000)));
+    pts = [];
+    for(var i=0;i<count;i++){
+      var c = color();
+      pts.push({
+        x: Math.random()*w, y: Math.random()*h,
+        r: 0.7 + Math.random()*1.8,
+        vx: (Math.random()-0.5)*0.16, vy: (Math.random()-0.5)*0.16,
+        c: c,
+        base: (c===INK ? 0.16 : 0.42) + Math.random()*0.18,
+        amp: 0.06 + Math.random()*0.12,
+        ph: Math.random()*Math.PI*2,
+        sp: 0.006 + Math.random()*0.01
+      });
+    }
+  }
+  function size(){
+    var rect = hero.getBoundingClientRect();
+    dpr = Math.min(window.devicePixelRatio || 1, 2);
+    w = rect.width; h = rect.height;
+    canvas.width = Math.round(w*dpr); canvas.height = Math.round(h*dpr);
+    ctx.setTransform(dpr,0,0,dpr,0,0);
+    build();
+  }
+  function frame(){
+    ctx.clearRect(0,0,w,h);
+    for(var i=0;i<pts.length;i++){
+      var p = pts[i];
+      p.x += p.vx; p.y += p.vy; p.ph += p.sp;
+      if(p.x < -4) p.x = w+4; else if(p.x > w+4) p.x = -4;
+      if(p.y < -4) p.y = h+4; else if(p.y > h+4) p.y = -4;
+      var a = p.base + Math.sin(p.ph)*p.amp;
+      if(a < 0) a = 0;
+      ctx.beginPath();
+      ctx.fillStyle = 'rgba('+p.c[0]+','+p.c[1]+','+p.c[2]+','+a.toFixed(3)+')';
+      ctx.arc(p.x, p.y, p.r, 0, Math.PI*2);
+      ctx.fill();
+    }
+    raf = requestAnimationFrame(frame);
+  }
+  function start(){
+    size();
+    if(reduce){
+      /* draw a single static field */
+      ctx.clearRect(0,0,w,h);
+      for(var i=0;i<pts.length;i++){
+        var p = pts[i];
+        ctx.beginPath();
+        ctx.fillStyle = 'rgba('+p.c[0]+','+p.c[1]+','+p.c[2]+','+p.base.toFixed(3)+')';
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI*2); ctx.fill();
+      }
+    } else {
+      if(raf) cancelAnimationFrame(raf);
+      frame();
+    }
+  }
+  var rt;
+  window.addEventListener('resize', function(){ clearTimeout(rt); rt = setTimeout(start, 180); });
+  start();
+})();
+</script>
+</body>
+</html>
